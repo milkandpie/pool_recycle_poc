@@ -2,9 +2,9 @@ import os
 
 from flask import Flask
 
-from create_engine import (create_psql_session, create_psql_engine)
 from log import log
 from models import Account
+from .create_engine import (create_psql_session, create_psql_engine)
 
 
 class Factory:
@@ -16,6 +16,7 @@ class Factory:
         max_over_flow = int(os.getenv('MAX_OVERFLOW'))
         pool_recycle = int(os.getenv('POOL_RECYCLE', 0))
         null_pool = bool(int(os.getenv('NULL_POOL', 0)))
+        lifo = bool(int(os.getenv('POOL_USE_LIFO', 0)))
 
         log.warning(f'\n________API on {self.pid}_______')
         log.info(f'DB_URL: {postgres_url}')
@@ -23,8 +24,11 @@ class Factory:
         log.info(f'MAX_OVERFLOW: {max_over_flow}')
         log.info(f'POOL_RECYCLE: {pool_recycle}')
         log.info(f'USING NULL POOL: {null_pool}\n')
+        log.info(f'USING LIFO QUEUE POOL: {lifo}\n')
 
-        self.engine = create_psql_engine(postgres_url, pool_size, max_over_flow, pool_recycle, null_pool)
+        self.engine = create_psql_engine(postgres_url, pool_size, max_over_flow, pool_recycle,
+                                         null_pool=null_pool,
+                                         pool_use_lifo=lifo)
 
     def create_app(self):
         app = Flask(__name__)
